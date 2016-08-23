@@ -15,13 +15,6 @@ module PoiseHaproxy::Resources
   module Haproxy
     # A `haproxy` resource to install and configure an instance of
     # HAProxy.
-    # @provides haproxy
-    # @action enable
-    # @action disable
-    # @action start
-    # @action stop
-    # @action restart
-    # @action reload
     # @example
     #   haproxy 'default'
     class Resource < Chef::Resource
@@ -32,6 +25,10 @@ module PoiseHaproxy::Resources
       # @!attribute config
       # Template content resource for the HAProxy configuration file.
       attribute(:config, template: true, default_source: 'haproxy.conf.erb')
+      # @!attribute directory
+      # Absolute path to directory where HAProxy is started.
+      # @return [String]
+      attribute(:directory, kind_of: String, default: lazy { default_directory })
       # @!attribute owner
       # System owner to deploy and run HAProxy as.
       # @return [String, nil, false]
@@ -80,6 +77,13 @@ module PoiseHaproxy::Resources
       # @return [String]
       def default_path
         haproxy_name_path('/etc/%{name}')
+      end
+
+      # The default path for this installation's run directory.
+      # @api private
+      # @return [String]
+      def default_directory
+        haproxy_name_path('/var/lib/%{name}')
       end
 
       # The default path for this installation's pidfile.

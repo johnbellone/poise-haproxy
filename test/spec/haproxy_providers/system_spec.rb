@@ -29,6 +29,6 @@ describe PoiseHaproxy::HaproxyProviders::System do
     end
 
     it { expect(haproxy_resource.provider_for_action(:disable)).to be_a described_class }
-    it { is_expected.to remove_package('haproxy') }
+    it { is_expected.to remove_package('haproxy').version(haproxy_version)) }
   end
 end

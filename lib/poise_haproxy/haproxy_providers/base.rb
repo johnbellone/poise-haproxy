@@ -5,6 +5,10 @@
 # Copyright 2016, Bloomberg Finance L.P.
 #
 
+require 'chef/provider'
+
+require 'poise_service/service_mixin'
+
 module PoiseHaproxy::HaproxyProviders
   # The provider base class for `haproxy`.
   # @see PoiseHaproxy::Resources::PoiseHaproxy::Resource
@@ -17,13 +21,8 @@ module PoiseHaproxy::HaproxyProviders
     def action_enable
       notifying_block do
         install_haproxy
-      end
-
-      notifying_block do
+        create_etc_directory
         create_directory
-        create_confd_directory
-        create_var_directory
-        write_config
       end
       super
     end
@@ -34,7 +33,7 @@ module PoiseHaproxy::HaproxyProviders
       notifying_block do
         uninstall_haproxy
         delete_directory
-        delete_var_directory
+        delete_etc_directory
       end
     end
 
@@ -56,18 +55,8 @@ module PoiseHaproxy::HaproxyProviders
       raise NotImplementedError
     end
 
-    def write_config
-      file new_resource.config_path do
-        content new_resource.config_content
-        owner new_resource.owner
-        group new_resource.group
-        mode '0600'
-        notifies :reload, new_resource, :immediately
-        verify ''
-      end
-    end
-
-    def create_directory
+    # @api private
+    def create_etc_directory
       directory new_resource.path do
         owner new_resource.owner
         group new_resource.group
@@ -75,38 +64,38 @@ module PoiseHaproxy::HaproxyProviders
       end
     end
 
-    def create_confd_directory
-      directory new_resource.confd_path do
+    # @api private
+    def create_directory
+      directory new_resource.directory do
         owner new_resource.owner
         group new_resource.group
         mode '0700'
       end
     end
 
-    def create_var_directory
-      directory new_resource.var_path do
-        owner new_resource.owner
-        group new_resource.group
-        mode '0700'
-      end
-    end
-
-    def delete_directory
+    # @api private
+    def delete_etc_directory
       create_directory.tap do |r|
         r.action(:delete)
         r.recursive(true)
       end
     end
 
-    def delete_var_directory
-      create_var_directory do |r|
+    # @api private
+    def delete_directory
+      create_service_directory.tap do |r|
         r.action(:delete)
         r.recursive(true)
       end
     end
 
     def service_options(r)
-      r.command([haproxy_binary].flatten.join(' '))
+      configs = ['-f', r.config.path]
+      r.parent.subresources.keep_if { |c| c.is_a?(PoiseHaproxy::Resources::HaproxyConfig::Resource) }.each do |config|
+        configs << ['-f', config.path]
+      end
+
+      r.command([haproxy_binary, configs].flatten.join(' '))
       r.user(new_resource.owner)
     end
   end

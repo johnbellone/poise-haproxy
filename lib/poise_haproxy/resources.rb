@@ -8,6 +8,6 @@
 module PoiseHaproxy
   module Resources
     autoload :Haproxy, 'poise_haproxy/resources/haproxy'
-    autoload :HaproxyService, 'poise_haproxy/resources/haproxy_service'
+    autoload :HaproxyConfig, 'poise_haproxy/resources/haproxy_config'
   end
 end

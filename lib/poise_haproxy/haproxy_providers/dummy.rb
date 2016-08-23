@@ -28,7 +28,7 @@ module PoiseHaproxy::HaproxyProviders
     # Output the value for the HAProxy binary.
     # @return [String]
     def haproxy_binary
-      options['haproxy_binary']
+      options[:haproxy_binary]
     end
 
     private

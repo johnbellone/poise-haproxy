@@ -16,9 +16,8 @@ describe PoiseHaproxy::Resources::Haproxy do
 
     let(:service_resource) { chef_run.haproxy('default').provider_for_action(:enable).send(:service_resource) }
     it { is_expected.to create_directory '/etc/haproxy' }
-    it { is_expected.to create_directory '/etc/haproxy/conf.d' }
     it { is_expected.to create_directory '/var/lib/haproxy' }
-    it { expect(service_resource.command).to eq '/usr/sbin/haproxy -c /etc/haproxy/haproxy.cfg' }
+    it { expect(service_resource.command).to eq '/usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg' }
 
     context 'with a different name' do
       recipe do
@@ -27,9 +26,8 @@ describe PoiseHaproxy::Resources::Haproxy do
 
       let(:service_resource) { chef_run.haproxy('duex').provider_for_action(:enable).send(:service_resource) }
       it { is_expected.to create_directory '/etc/haproxy-duex' }
-      it { is_expected.to create_directory '/etc/haproxy-deux/conf.d' }
-      it { is_expected.to create_directory '/var/lib/haproxy-deux' }
-      it { expect(service_resource.command).to eq '/usr/sbin/haproxy -c /etc/haproxy-deux/haproxy.cfg' }
+      it { is_expected.to create_directory '/var/lib/haproxy-duex' }
+      it { expect(service_resource.command).to eq '/usr/sbin/haproxy -f /etc/haproxy-deux/haproxy.cfg' }
     end
   end
 
@@ -50,8 +48,8 @@ describe PoiseHaproxy::Resources::Haproxy do
       end
 
       it { is_expected.to delete_directory('/etc/haproxy-deux').with(recursive: true) }
-      it { is_expected.not_to delete_directory('/etc/haproxy') }
       it { is_expected.to delete_directory('/var/lib/haproxy-deux').with(recursive: true) }
+      it { is_expected.not_to delete_directory('/etc/haproxy') }
       it { is_expected.not_to delete_directory('/var/lib/haproxy') }
     end
   end
