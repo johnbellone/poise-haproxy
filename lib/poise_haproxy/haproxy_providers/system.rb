@@ -23,7 +23,7 @@ module PoiseHaproxy::HaproxyProviders
     # @api private
     # @return [Hash]
     def self.default_inversion_options(_node, _resource)
-      super.merge(package: 'haproxy')
+      super.merge(package: 'haproxy', no_epel: false)
     end
 
     # Output the value for the HAProxy binary.
@@ -36,6 +36,10 @@ module PoiseHaproxy::HaproxyProviders
 
     # @api private
     def install_haproxy
+      if !options[:no_epel] && node.platform_family?('rhel') && node.platform_version.to_i == 5
+        include_recipe 'yum-epel::default'
+      end
+
       init_file = file '/etc/init.d/haproxy' do
         action :nothing
       end

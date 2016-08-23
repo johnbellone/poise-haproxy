@@ -13,7 +13,11 @@ describe PoiseHaproxy::HaproxyProviders::System do
   end
 
   it { expect(haproxy_resource.provider_for_action(:enable)).to be_a described_class }
-  it { is_expected.to remove_package('haproxy').with(version: haproxy_version) }
+  it { is_expected.to install_package('haproxy').with(version: haproxy_version) }
+
+  context 'with CentOS 5' do
+    it { is_expected.to include_recipe('yum-epel::default') }
+  end
 
   context 'action :disable' do
     recipe do
