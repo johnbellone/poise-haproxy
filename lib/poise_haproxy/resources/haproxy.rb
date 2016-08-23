@@ -13,7 +13,8 @@ module PoiseHaproxy::Resources
   # @see Haproxy::Resource
   # @since 1.0
   module Haproxy
-    # A `haproxy` resource to install and configure HAProxy.
+    # A `haproxy` resource to install and configure an instance of
+    # HAProxy.
     # @provides haproxy
     # @action enable
     # @action disable
@@ -22,7 +23,7 @@ module PoiseHaproxy::Resources
     # @action restart
     # @action reload
     # @example
-    #   haproxy 'haproxy'
+    #   haproxy 'default'
     class Resource < Chef::Resource
       include Poise(container: true, inversion: true)
       provides(:haproxy)
@@ -51,6 +52,54 @@ module PoiseHaproxy::Resources
       # Version of HAProxy to install.
       # @return [String, nil, false]
       attribute(:version, kind_of: [String, NilClass, FalseClass], default: nil)
+
+      # @!attribute confd_path
+      # The absolute path to the conf.d/ directory.
+      # @return [String]
+      def confd_path
+        ::File.join(path, 'conf.d')
+      end
+
+      # @!attribute config_path
+      # The absolute path to the configuration file.
+      # @return [String]
+      def config_path
+        ::File.join(path, 'haproxy.cfg')
+      end
+
+      # The path to the `haproxy` binary for this HAProxy installation.
+      # @return [String]
+      def haproxy_binary
+        provider_for_action(:haproxy_binary).haproxy_binary
+      end
+
+      private
+
+      # The default path for this installation's configuration root.
+      # @api private
+      # @return [String]
+      def default_path
+        haproxy_name_path('/etc/%{name}')
+      end
+
+      # The default path for this installation's pidfile.
+      # @api private
+      # @return [String]
+      def default_pidfile
+        haproxy_name_path('/var/run/%{name}.pid')
+      end
+
+      # Interpolate the name of this HAProxy instance into a path.
+      # @api private
+      # @return [String]
+      def haproxy_name_path(path)
+        name = if service_name == 'default'
+                 'haproxy'
+               else
+                 "haproxy-#{service_name}"
+               end
+        path % {name: name}
+      end
     end
   end
 end

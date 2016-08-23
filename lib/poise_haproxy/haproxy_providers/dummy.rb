@@ -6,6 +6,7 @@
 #
 
 module PoiseHaproxy::HaproxyProviders
+  # The dummy provider for `haproxy` for testing.
   # @since 1.0
   class Dummy < Base
     provides(:dummy)
@@ -32,12 +33,15 @@ module PoiseHaproxy::HaproxyProviders
 
     private
 
+    # @api private
     def install_haproxy
     end
 
+    # @api private
     def uninstall_haproxy
     end
 
+    # @api private
     def service_options(r)
       super
       r.provider(:dummy)
